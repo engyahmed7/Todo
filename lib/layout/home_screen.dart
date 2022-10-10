@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print
 
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
@@ -73,9 +73,24 @@ class _HomeScreenState extends State<HomeScreen> {
       //   closeManually: false,
       // ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          var name = await getName();
-          print(name);
+        // Try Catch Error Handling
+
+        // onPressed: () async {
+        //   try {
+        //     var name = await getName();
+        //     print(name);
+        //   } catch (err) {
+        //     print('error' + err.toString());
+        //   }
+        // },
+
+        // Then Catch Error Handling
+        onPressed: () {
+          getName().then((value) {
+            print(value);
+          }).catchError((err) {
+            print('error' + err.toString());
+          });
         },
         child: Icon(Icons.add),
       ),
