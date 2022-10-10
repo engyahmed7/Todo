@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
@@ -51,26 +51,33 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      floatingActionButton: SpeedDial(
-        animatedIcon: AnimatedIcons.add_event,
-        children: [
-          SpeedDialChild(
-            child: Icon(Icons.copy),
-            label: 'copy',
-          ),
-          SpeedDialChild(
-            child: Icon(Icons.share),
-            label: 'share',
-          ),
-          SpeedDialChild(
-            child: Icon(Icons.phone),
-            label: 'phone',
-          ),
-        ],
-        overlayColor: Colors.grey,
-        spaceBetweenChildren: 15,
-        spacing: 10,
-        closeManually: false,
+      // floatingActionButton: SpeedDial(
+      //   animatedIcon: AnimatedIcons.add_event,
+      //   children: [
+      //     SpeedDialChild(
+      //       child: Icon(Icons.copy),
+      //       label: 'copy',
+      //     ),
+      //     SpeedDialChild(
+      //       child: Icon(Icons.share),
+      //       label: 'share',
+      //     ),
+      //     SpeedDialChild(
+      //       child: Icon(Icons.phone),
+      //       label: 'phone',
+      //     ),
+      //   ],
+      //   overlayColor: Colors.grey,
+      //   spaceBetweenChildren: 15,
+      //   spacing: 10,
+      //   closeManually: false,
+      // ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          var name = await getName();
+          print(name);
+        },
+        child: Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -90,5 +97,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: screens[currentIndex],
     );
+  }
+
+  Future<String> getName() async {
+    return 'Engy Ahmed';
   }
 }
