@@ -7,9 +7,7 @@ class NewTaskScreen extends StatelessWidget {
     return Center(
       child: Text(
         'New Task',
-        style: TextStyle(
-            fontSize: 25.0
-        ),
+        style: TextStyle(fontSize: 25.0),
       ),
     );
   }

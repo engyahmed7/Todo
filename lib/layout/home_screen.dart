@@ -2,10 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:todo_app/modules/ArchiveTask/archive_task_screen.dart';
 import 'package:todo_app/modules/DoneTask/done_task_screen.dart';
 import 'package:todo_app/modules/NewTask/new_task_screen.dart';
+import 'package:todo_app/shared/components/componenet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -22,6 +24,15 @@ class _HomeScreenState extends State<HomeScreen> {
     ArchiveTaskScreen()
   ];
   List<String> titles = ['New Task', 'Done Task', 'Archived Task'];
+  late Database database;
+  var scaffoldKey = GlobalKey<ScaffoldState>();
+  var formKey = GlobalKey<FormState>();
+  bool isBottomSheetShown = false;
+  IconData fabIcon = Icons.edit;
+  var titleController = TextEditingController();
+  var timeController = TextEditingController();
+  var dateController = TextEditingController();
+  var statusController = TextEditingController();
 
   @override
   void initState() {
@@ -32,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
       appBar: AppBar(
         title: Text(titles[currentIndex]),
         centerTitle: true,
@@ -41,9 +53,9 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             UserAccountsDrawerHeader(
               accountName: Text('Engy Ahmed'),
-              accountEmail: Text('engya306@gmail.com'),
+              accountEmail: Text('engya306@gmail.com'), 
               currentAccountPicture: CircleAvatar(
-                child: Text('A'),
+                backgroundImage: AssetImage('images/img.jpg'),
               ),
             ),
             ListTile(
@@ -81,26 +93,113 @@ class _HomeScreenState extends State<HomeScreen> {
       //   closeManually: false,
       // ),
       floatingActionButton: FloatingActionButton(
-        // Try Catch Error Handling
-
-        // onPressed: () async {
-        //   try {
-        //     var name = await getName();
-        //     print(name);
-        //   } catch (err) {
-        //     print('error' + err.toString());
-        //   }
-        // },
-
-        // Then Catch Error Handling
         onPressed: () {
-          getName().then((value) {
-            print(value);
-          }).catchError((err) {
-            print('error' + err.toString());
-          });
+          if (isBottomSheetShown) {
+            if (formKey.currentState!.validate()) {
+              insertToDatabase(
+                title: titleController.text,
+                time: timeController.text,
+                date: dateController.text,
+              ).then((value) {
+                print('inserted');
+              });
+              Navigator.pop(context);
+              isBottomSheetShown = false;
+              setState(() {
+                fabIcon = Icons.edit;
+              });
+            }
+          } else {
+            scaffoldKey.currentState?.showBottomSheet(
+              (context) {
+                return Container(
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Form(
+                      key: formKey,
+                      child: Column(mainAxisSize: MainAxisSize.min, children: [
+                        defaultFormField(
+                            controller: titleController,
+                            type: TextInputType.text,
+                            validate: (String? value) {
+                              if (value!.isEmpty) {
+                                return 'Title must not be empty';
+                              }
+                              return null;
+                            },
+                            labelText: 'Task Title',
+                            hintText: 'Enter Task Title',
+                            prefix: Icons.title),
+                        SizedBox(
+                          height: 15,
+                        ),
+                        defaultFormField(
+                            controller: timeController,
+                            type: TextInputType.datetime,
+                            validate: (String? value) {
+                              if (value!.isEmpty) {
+                                return 'Time must not be empty';
+                              }
+                              return null;
+                            },
+                            labelText: 'Task Time',
+                            prefix: Icons.watch_later_outlined,
+                            onTap: () {
+                              showTimePicker(
+                                      context: context,
+                                      initialTime: TimeOfDay.now())
+                                  .then((value) {
+                                timeController.text =
+                                    value!.format(context).toString();
+                              }).catchError((err) {
+                                print(err);
+                              });
+                            }),
+                        SizedBox(
+                          height: 15.0,
+                        ),
+                        defaultFormField(
+                            controller: dateController,
+                            type: TextInputType.datetime,
+                            validate: (String? value) {
+                              if (value!.isEmpty) {
+                                return 'Date must not be empty';
+                              }
+                              return null;
+                            },
+                            labelText: 'Task Date',
+                            prefix: Icons.calendar_today,
+                            onTap: () {
+                              showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime.now(),
+                                      lastDate: DateTime.parse('2022-11-10'))
+                                  .then((value) {
+                                dateController.text =
+                                    DateFormat.yMMMd().format(value!);
+                              }).catchError((err) {
+                                print(err);
+                              });
+                            }),
+                        SizedBox(
+                          height: 15.0,
+                        ),
+                      ]),
+                    ),
+                  ),
+                );
+              },
+              elevation: 50.0,
+            );
+            isBottomSheetShown = true;
+            setState(() {
+              fabIcon = Icons.add;
+            });
+          }
         },
-        child: Icon(Icons.add),
+        child: Icon(fabIcon),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -130,8 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
     var databasesPath = await getDatabasesPath();
     String path = databasesPath + 'Todo.db';
     // open the database
-    var database =
-        await openDatabase(path, version: 1, onCreate: (db, version) {
+    database = await openDatabase(path, version: 1, onCreate: (db, version) {
       print('database created');
       db
           .execute(
@@ -143,6 +241,24 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }, onOpen: (db) {
       print('database opened');
+    });
+  }
+
+  // insert to database with then and catch
+  Future insertToDatabase({
+    required String title,
+    required String time,
+    required String date,
+  }) async {
+    await database.transaction((txn) async {
+      await txn
+          .rawInsert(
+              'INSERT INTO tasks(title, date, time,status) VALUES("$title","$date","$time","new")')
+          .then((value) {
+        print('$value inserted successfully');
+      }).catchError((error) {
+        print('error when inserting new record ${error.toString()}');
+      });
     });
   }
 }
