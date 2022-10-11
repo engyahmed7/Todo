@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
 
@@ -64,5 +64,49 @@ Widget defaultFormField({
           onPressed: suffixPressed,
           icon: Icon(suffix),
         ),
+      ),
+    );
+
+Widget buildTaskItem(Map map) => Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Row(
+        // crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 40.0,
+            child: Text(
+              map['time'],
+              style: TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 20.0,
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                map['title'],
+                style: TextStyle(
+                  fontSize: 22.0,
+                ),
+              ),
+              SizedBox(
+                height: 10.0,
+              ),
+              Text(
+                map['date'],
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          )
+        ],
       ),
     );
