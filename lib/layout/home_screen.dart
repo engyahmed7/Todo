@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:todo_app/modules/ArchiveTask/archive_task_screen.dart';
 import 'package:todo_app/modules/DoneTask/done_task_screen.dart';
 import 'package:todo_app/modules/NewTask/new_task_screen.dart';
@@ -21,6 +22,13 @@ class _HomeScreenState extends State<HomeScreen> {
     ArchiveTaskScreen()
   ];
   List<String> titles = ['New Task', 'Done Task', 'Archived Task'];
+
+  @override
+  void initState() {
+    super.initState();
+    createDatabase();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,5 +124,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<String> getName() async {
     return 'Engy Ahmed';
+  }
+
+  void createDatabase() async {
+    var databasesPath = await getDatabasesPath();
+    String path = databasesPath + 'Todo.db';
+    // open the database
+    var database =
+        await openDatabase(path, version: 1, onCreate: (db, version) {
+      print('database created');
+      db
+          .execute(
+              'CREATE TABLE tasks (id INTEGER PRIMARY KEY, title TEXT, date TEXT, time TEXT, status TEXT)')
+          .then((value) {
+        print('table created');
+      }).catchError((error) {
+        print('error when creating table ${error.toString()}');
+      });
+    }, onOpen: (db) {
+      print('database opened');
+    });
   }
 }
